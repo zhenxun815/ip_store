@@ -1,0 +1,4 @@
+mongo:
+    collections:
+        raw-doc:
+            name: raw
