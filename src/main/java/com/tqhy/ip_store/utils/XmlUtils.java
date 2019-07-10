@@ -56,10 +56,10 @@ public class XmlUtils {
     }
 
 
-    public static RawDoc getRawDocFromXml(File xmlDir) {
+    public static Optional<RawDoc> getRawDocFromXml(File xmlDir) {
         String xmlName = xmlDir.getName();
         String xmlFileName = xmlName + ".XML";
-        //logger.info("parse xml: " + xmlDir.getAbsolutePath());
+        logger.info("parse xml: {}", xmlDir.getAbsolutePath());
         File biblioXmlFile = new File(xmlDir, xmlFileName);
 
         //logger.info("biblio xml file is: " + biblioXmlFile.getAbsolutePath());

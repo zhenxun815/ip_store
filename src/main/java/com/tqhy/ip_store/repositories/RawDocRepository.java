@@ -28,7 +28,7 @@ public interface RawDocRepository extends MongoRepository<RawDoc, String> {
 
     RawDoc save(RawDoc rawDoc);
 
-    List<RawDoc> save(List<RawDoc> rawDocs);
+    <S extends RawDoc> List<S> saveAll(Iterable<S> entities);
 
     void deleteBy_id(ObjectId _id);
 

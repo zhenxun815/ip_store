@@ -14,10 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Yiheng
@@ -34,10 +31,10 @@ public class RawDocUtils {
      * @param originalData
      * @return
      */
-    public static RawDoc inflateDoc(BiblioPatentDocument originalData, FulltextPatentDocument fulltextData) {
+    public static Optional<RawDoc> inflateDoc(BiblioPatentDocument originalData, FulltextPatentDocument fulltextData) {
         RawDoc rawDoc = new RawDoc();
         if (null == originalData || null == fulltextData) {
-            return null;
+            return Optional.empty();
         }
         BiblioData biblioData = originalData.getBiblioData();
         String title = biblioData.getTitle().getTitle();
@@ -48,19 +45,20 @@ public class RawDocUtils {
         rawDoc.setAbs(paragraph);
 
         Map<String, String> pubInfoMap = generateDocIdInfo(biblioData.getPublicationInfo());
-        String id = pubInfoMap.get("id");
+        String pubId = pubInfoMap.get("id");
         String date = pubInfoMap.get("date");
-        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(date)) {
-            return null;
+        logger.info("inflate doc {}", pubId);
+        if (StringUtils.isEmpty(pubId) && StringUtils.isEmpty(date)) {
+            return Optional.empty();
         }
-        rawDoc.setPubId(id);
+        rawDoc.setPubId(pubId);
         rawDoc.setPublicationDate(Long.parseLong(date));
 
         Map<String, String> appInfoMap = generateDocIdInfo(biblioData.getApplicationInfo());
         String appId = appInfoMap.get("id");
         String appDate = appInfoMap.get("date");
         if (StringUtils.isEmpty(appId) || StringUtils.isEmpty(appDate)) {
-            return null;
+            return Optional.empty();
         }
         rawDoc.setAppId(appId);
         rawDoc.setApplicationDate(Long.parseLong(appDate));
@@ -73,7 +71,7 @@ public class RawDocUtils {
 
         String claim = generateClaim(fulltextData.getClaims());
         rawDoc.setClaim(claim);
-        return rawDoc;
+        return Optional.ofNullable(rawDoc);
     }
 
     /**

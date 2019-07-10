@@ -4,6 +4,8 @@ import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.repositories.RawDocRepository;
 import com.tqhy.ip_store.services.RawDocService;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.Optional;
  */
 @Service
 public class RawDocServiceImpl implements RawDocService {
+
+    Logger logger = LoggerFactory.getLogger(RawDocServiceImpl.class);
 
     @Autowired
     RawDocRepository repository;
@@ -79,14 +83,15 @@ public class RawDocServiceImpl implements RawDocService {
     }
 
     @Override
-    public Optional<RawDoc> save(@NonNull RawDoc rawDoc) {
+    public Optional<RawDoc> save(RawDoc rawDoc) {
         return Optional.ofNullable(repository.save(rawDoc));
     }
 
     @Override
     public Optional<List<RawDoc>> save(List<RawDoc> rawDocs) {
-        repository.save(rawDocs);
-        return null;
+        logger.info("into save all with size {}", rawDocs.size());
+        List<RawDoc> save = repository.saveAll(rawDocs);
+        return Optional.ofNullable(save);
     }
 
     @Override

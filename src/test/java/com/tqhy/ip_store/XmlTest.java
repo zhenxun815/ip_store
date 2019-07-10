@@ -29,7 +29,7 @@ public class XmlTest {
         Biblio biblio = XmlUtils.unmarshal(biblioXmlFile, Biblio.class);
         logger.info("biblio is {}", biblio);
         */
-        RawDoc rawDoc = XmlUtils.getRawDocFromXml(new File(xmlDir));
+        RawDoc rawDoc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(null);
         logger.info("raw doc is: {}", JSONObject.toJSONString(rawDoc));
     }
 }

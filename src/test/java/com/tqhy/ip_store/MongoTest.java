@@ -49,16 +49,12 @@ public class MongoTest {
     public void testFindByClass() {
         String section = "H";
         String mainClass = "02";
-        String subClass = "J";
+        String subClass = "A";
 
-        Optional<List<RawDoc>> bySectionOpt = rawDocService.findBySection(section);
-        if (bySectionOpt.isPresent()) {
-            List<RawDoc> rawDocs = bySectionOpt.get();
-            for (RawDoc rawDoc : rawDocs) {
-                logger.info("get by section {} doc is {}", section, rawDoc);
-            }
-        } else {
-            logger.info("not find");
+        Optional<List<RawDoc>> bySectionOpt = rawDocService.findBuySectionAndMainClassAndSubClass(section, mainClass, subClass);
+        List<RawDoc> rawDocs = bySectionOpt.get();
+        for (RawDoc rawDoc : rawDocs) {
+            logger.info("get by section {} doc is {}", section, rawDoc);
         }
     }
 
@@ -67,7 +63,7 @@ public class MongoTest {
         String xmlDir = "F:\\ip_data\\xml\\BIBLIOGRAPHIC_INVENTION_PUBLICATION\\CN2016103202590B";
         //String xmlName = "CN2015105122581A.XML";
         //File biblioXmlFile = new File(xmlDir, xmlName);
-        RawDoc doc = XmlUtils.getRawDocFromXml(new File(xmlDir));
+        RawDoc doc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(new RawDoc());
         logger.info("doc to save is {}", JSONObject.toJSONString(doc));
         rawDocService.save(doc)
                      .ifPresent(rawDoc -> logger.info("save doc is {}", JSONObject.toJSONString(rawDoc)));
