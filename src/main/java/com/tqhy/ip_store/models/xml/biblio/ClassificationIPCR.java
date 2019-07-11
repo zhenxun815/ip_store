@@ -39,12 +39,6 @@ public class ClassificationIPCR {
     @XmlElement(name = "SubGroup")
     private String subGroup;
 
-    @XmlElement(name = "GeneratingOffice")
-    private String generatingOffice;
-
-    @XmlElement(name = "ClassificationDataSource")
-    private String classificationDataSource;
-
     @XmlElement(name = "Text")
     private String text;
 

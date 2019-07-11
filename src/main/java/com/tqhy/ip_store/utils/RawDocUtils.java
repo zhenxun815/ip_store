@@ -3,10 +3,7 @@ package com.tqhy.ip_store.utils;
 import com.tqhy.ip_store.configs.Constants;
 import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.models.xml.*;
-import com.tqhy.ip_store.models.xml.biblio.Abs;
-import com.tqhy.ip_store.models.xml.biblio.BiblioData;
-import com.tqhy.ip_store.models.xml.biblio.BiblioPatentDocument;
-import com.tqhy.ip_store.models.xml.biblio.ClassificationIPCR;
+import com.tqhy.ip_store.models.xml.biblio.*;
 import com.tqhy.ip_store.models.xml.fulltext.Claims;
 import com.tqhy.ip_store.models.xml.fulltext.Fulltext;
 import com.tqhy.ip_store.models.xml.fulltext.FulltextPatentDocument;
@@ -62,29 +59,40 @@ public class RawDocUtils {
         }
         rawDoc.setAppId(appId);
         rawDoc.setApplicationDate(Long.parseLong(appDate));
-
-        List<ClassificationIPCR> classificationIPCRs = biblioData.getClassificationIPCRs();
-        ClassificationIPCR primaryClassification = getPrimaryClassificationIPCR(classificationIPCRs);
-        rawDoc.setSection(primaryClassification.getSection());
-        rawDoc.setMainClass(primaryClassification.getMainClass());
-        rawDoc.setSubClass(primaryClassification.getSubClass());
+        Optional<ClassificationIPCR> primaryClassificationOpt = getPrimaryClassification(biblioData);
+        if (primaryClassificationOpt.isPresent()) {
+            ClassificationIPCR primaryClassification = primaryClassificationOpt.get();
+            rawDoc.setSection(primaryClassification.getSection());
+            rawDoc.setMainClass(primaryClassification.getMainClass());
+            rawDoc.setSubClass(primaryClassification.getSubClass());
+        } else {
+            return Optional.empty();
+        }
 
         String claim = generateClaim(fulltextData.getClaims());
         rawDoc.setClaim(claim);
         return Optional.ofNullable(rawDoc);
     }
 
+    private static Optional<ClassificationIPCR> getPrimaryClassification(BiblioData biblioData) {
+        ClassificationIPC classificationIPC = biblioData.getClassificationIPC();
+        return null == classificationIPC ? getPrimaryClassificationIPCR(biblioData) :
+                Optional.ofNullable(classificationIPC.getMainClassification());
+    }
+
+
     /**
      * 获取专利主分类{@link ClassificationIPCR}对象
      *
-     * @param classificationIPCRs
+     * @param biblioData
      * @return
      */
-    public static ClassificationIPCR getPrimaryClassificationIPCR(List<ClassificationIPCR> classificationIPCRs) {
-        return classificationIPCRs.stream()
-                                  .filter(ipcr -> ipcr.getSequence().equals("1"))
-                                  .findFirst()
-                                  .orElse(new ClassificationIPCR());
+    public static Optional<ClassificationIPCR> getPrimaryClassificationIPCR(BiblioData biblioData) {
+        List<ClassificationIPCR> classificationIPCRs = biblioData.getClassificationIPCRs();
+
+        return null == classificationIPCRs ? Optional.empty() : classificationIPCRs.stream()
+                                                                                   .filter(ipcr -> ipcr.getSequence().equals("1"))
+                                                                                   .findFirst();
     }
 
 

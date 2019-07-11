@@ -38,6 +38,9 @@ public class BiblioData implements Serializable {
     @XmlElementWrapper(name = "ClassificationsIPCR")
     private List<ClassificationIPCR> classificationIPCRs;
 
+    @XmlElement(name = "ClassificationIPC")
+    private ClassificationIPC classificationIPC;
+
     @XmlElement(name = "Title")
     private Title title;
 }
