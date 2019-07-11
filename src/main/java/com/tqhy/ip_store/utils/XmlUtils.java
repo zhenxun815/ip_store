@@ -1,10 +1,7 @@
 package com.tqhy.ip_store.utils;
 
-import com.alibaba.fastjson.JSONObject;
 import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.models.xml.biblio.Biblio;
-import com.tqhy.ip_store.models.xml.DocumentID;
-import com.tqhy.ip_store.models.xml.DocumentIdInfo;
 import com.tqhy.ip_store.models.xml.fulltext.Fulltext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +21,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
-import java.util.zip.ZipFile;
 
 /**
  * xml工具类,单例.
@@ -40,15 +33,55 @@ import java.util.zip.ZipFile;
 public class XmlUtils {
 
     static Logger logger = LoggerFactory.getLogger(XmlUtils.class);
-    static long count = 0;
+
+    /**
+     * 获所有xml文件所在文件夹集合的迭代器
+     *
+     * @param baseDirPath       String,xml文件根路径
+     * @param biblioBasePathArr 数组,元素为不同专利类型文件夹名称
+     * @return Iterator&lt;File>&gt;
+     */
+    public static Iterator<File> getAllXmlDirUnderBaseDir(String baseDirPath, String[] biblioBasePathArr) {
+        return Arrays.stream(biblioBasePathArr)
+                     .collect(ArrayList<File>::new,
+                              (list, biblioBasePath) -> {
+                                  File workBiblioDir = new File(baseDirPath, biblioBasePath);
+                                  if (workBiblioDir.exists()) {
+                                      list.addAll(getXmlDirsUnderBiblioBaseDir(workBiblioDir));
+                                  }
+                              },
+                              ArrayList::addAll)
+                     .iterator();
+    }
+
+    /**
+     * 获取某类型专利文件夹下所有专利xml文档所在文件夹集合
+     *
+     * @param workBiblioDir 某类型专利文件夹的{@link File}对象
+     * @return List&lt;File&gt; 元素为xml所在文件夹的{@link File}对象
+     */
+    public static List<File> getXmlDirsUnderBiblioBaseDir(File workBiblioDir) {
+
+        File[] yearDirs = workBiblioDir.listFiles(File::isDirectory);
+        logger.info("biblio dirs in {} collection start...", workBiblioDir.getAbsolutePath());
+        ArrayList<File> xmlDirs = Arrays.stream(yearDirs)
+                                        .collect(ArrayList::new,
+                                                 (list, yearDir) -> {
+                                                     File[] xmlDirArr = XmlUtils.getXmlDirsUnderYearDir(yearDir);
+                                                     list.addAll(Arrays.asList(xmlDirArr));
+                                                 },
+                                                 ArrayList::addAll);
+        logger.info("biblio dirs in {} collection complete...", workBiblioDir.getAbsolutePath());
+        return xmlDirs;
+    }
 
     /**
      * 获取日期文件夹下所有xml文件夹数组
      *
-     * @param yearDir
+     * @param yearDir xml文件所在的年月日文件夹的{@link File}对象
      * @return
      */
-    public static File[] getXmlDirs(File yearDir) {
+    public static File[] getXmlDirsUnderYearDir(File yearDir) {
         String yearDirName = yearDir.getName();
         String parentDirPath = "CREATE/" + yearDirName + "/";
         File parentDir = new File(yearDir, parentDirPath);
@@ -56,6 +89,12 @@ public class XmlUtils {
     }
 
 
+    /**
+     * 从xml文件获取{@link RawDoc}对象
+     *
+     * @param xmlDir 著录项xml所在文件夹的{@link File}对象
+     * @return
+     */
     public static Optional<RawDoc> getRawDocFromXml(File xmlDir) {
         String xmlName = xmlDir.getName();
         String xmlFileName = xmlName + ".XML";
@@ -70,184 +109,6 @@ public class XmlUtils {
         Fulltext fulltext = unmarshal(fulltextXmlFile, Fulltext.class);
         return RawDocUtils.inflateDoc(biblio.getPatentDocument(), fulltext.getPatentDocument());
     }
-
-
-    public static void unmarshalAllFromDirectory(String directotyPath, String type) {
-
-        File directory = new File(directotyPath);
-        if (directory.exists() && directory.isDirectory()) {
-            File[] subDirectories = directory.listFiles(File::isDirectory);
-            logger.info("subDirectories length is: " + subDirectories.length);
-            int processors = Runtime.getRuntime().availableProcessors();
-            ForkJoinPool pool = new ForkJoinPool(processors);
-            pool.invoke(new UnmarshalFilesRecursiveTask(subDirectories, type));
-        }
-    }
-
-    /**
-     * 解析zip文件下所有 fulltext xml
-     *
-     * @param zipFilePath
-     */
-    public static List<Fulltext> unmarshalAllFulltextFromZip(String zipFilePath) {
-        logger.info("into unmarshal zip: " + zipFilePath);
-        ArrayList<Fulltext> errorList = new ArrayList<>();
-        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            //String zipFileName = zipFile.getName();
-            // logger.debug("zip file name is: " + zipFileName);
-            System.out.print("unmarshal zip...");
-            zipFile.stream()
-                   .filter(zipEntry -> zipEntry.getName().matches(".+(.xml|XML)$"))
-                   .forEach(zipEntry -> {
-                       try (InputStream in = zipFile.getInputStream(zipEntry)) {
-
-                           String entryName = zipEntry.getName();
-                           logger.info("unmarshaling: " + entryName);
-                           String[] split = entryName.split("\\\\");
-                           String xmlFileName = split[split.length - 1];
-                           logger.info("xml file name is: " + xmlFileName);
-                           String[] split1 = xmlFileName.split("\\.");
-                           String jsonFileName = split1[0];
-                           Fulltext fulltext = unmarshal(in, Fulltext.class, zipFilePath, xmlFileName);
-                           DocumentIdInfo documentIdInfo = fulltext.getPatentDocument()
-                                                                   .getBiblioData()
-                                                                   .getPublicationInfo()
-                                                                   .stream()
-                                                                   .filter(appInfo -> "original".equals(appInfo.getDataFormat()))
-                                                                   .findFirst().orElse(null);
-                           if (null == documentIdInfo) {
-                               //"BIBLIOGRAPHIC_INVENTION_GRANT\\20160106\\akj.ZIP"
-                               copyErrorXml(in, xmlFileName);
-                           } else {
-                               DocumentID docId = documentIdInfo.getDocumentID();
-
-                               Date dateInfo = docId.getDate();
-                               if (null != dateInfo) {
-                                   String storePath = genStorePath("/home/tqhy/ipdata/fulltext", dateInfo);
-
-                                   File jsonFile = new File(storePath, jsonFileName + ".json");
-                                   if (jsonFile.exists()) {
-                                       jsonFile.delete();
-                                   }
-                                   boolean newFile = jsonFile.createNewFile();
-                                   if (newFile) {
-                                       try (FileWriter writer = new FileWriter(jsonFile)) {
-                                           writer.write(JSONObject.toJSONString(fulltext));
-                                           writer.flush();
-                                           count++;
-                                           logger.info("count is: " + count);
-                                       }
-                                   }
-
-                               }
-                           }
-
-
-                       } catch (IOException e) {
-                           e.printStackTrace();
-                       }
-                   });
-
-            System.out.println();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return errorList;
-    }
-
-    public static List<Biblio> unmarshalAllBibliographicFromZip(String zipFilePath) {
-        logger.info("into unmarshal zip: " + zipFilePath);
-        ArrayList<Biblio> errorList = new ArrayList<>();
-        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            //String zipFileName = zipFile.getName();
-            // logger.debug("zip file name is: " + zipFileName);
-            System.out.print("unmarshal zip...");
-            zipFile.stream()
-                   .filter(zipEntry -> zipEntry.getName().matches(".+(.xml|XML)$"))
-                   .forEach(zipEntry -> {
-                       try (InputStream in = zipFile.getInputStream(zipEntry)) {
-
-                           String entryName = zipEntry.getName();
-                           logger.info("unmarshaling: " + entryName);
-                           String[] split = entryName.split("\\\\");
-                           String xmlFileName = split[split.length - 1];
-                           logger.info("xml file name is: " + xmlFileName);
-                           String[] split1 = xmlFileName.split("\\.");
-                           String jsonFileName = split1[0];
-                           Biblio biblio = unmarshal(in, Biblio.class, zipFilePath, xmlFileName);
-                           DocumentIdInfo documentIdInfo = biblio.getPatentDocument()
-                                                                 .getBiblioData()
-                                                                 .getPublicationInfo()
-                                                                 .stream()
-                                                                 .filter(appInfo -> "original".equals(appInfo.getDataFormat()))
-                                                                 .findFirst().orElse(null);
-                           if (null == documentIdInfo) {
-                               copyErrorXml(in, xmlFileName);
-                           } else {
-                               DocumentID docId = documentIdInfo.getDocumentID();
-
-                               Date dateInfo = docId.getDate();
-                               if (null != dateInfo) {
-                                   String storePath = genStorePath("/home/tqhy/data250/zlx", dateInfo);
-
-                                   File jsonFile = new File(storePath, jsonFileName + ".json");
-                                   if (jsonFile.exists()) {
-                                       jsonFile.delete();
-                                   }
-                                   boolean newFile = jsonFile.createNewFile();
-                                   if (newFile) {
-                                       try (FileWriter writer = new FileWriter(jsonFile)) {
-                                           writer.write(JSONObject.toJSONString(biblio));
-                                           writer.flush();
-                                           count++;
-                                           logger.info("count is: " + count);
-                                       }
-                                   }
-
-                               }
-                           }
-
-
-                       } catch (IOException e) {
-                           e.printStackTrace();
-                       }
-                   });
-
-            System.out.println();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return errorList;
-    }
-
-    /**
-     * 生成json文件保存路径
-     *
-     * @param storeRootPath
-     * @param dateInfo
-     * @return
-     */
-    public static String genStorePath(String storeRootPath, Date dateInfo) {
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String format = sdf.format(dateInfo);
-        String[] split = format.split("-");
-
-        String storePath = storeRootPath + "/" + split[0] + "/" + split[1] + "/" + split[2];
-        File storeDir = new File(storePath);
-        if (!storeDir.exists()) {
-            storeDir.mkdirs();
-        }
-        return storePath;
-
-    }
-
 
     /**
      * xml文件转换为java对象
@@ -383,60 +244,6 @@ public class XmlUtils {
     public static <T> void marshal(T obj, String xmlPath, Class<T> type) {
         File xmlFile = new File(xmlPath);
         marshal(obj, xmlFile, type);
-    }
-
-    /**
-     * 解析文件夹下xml并行计算任务类
-     *
-     * @param <T>
-     */
-    private static class UnmarshalFilesRecursiveTask<T> extends RecursiveAction {
-
-        private static final long serialVersionUID = 1L;
-        private static final int THRESHOLD = 50;
-        private File[] files;
-        private String type;
-
-
-        @Override
-        protected void compute() {
-            logger.info("files length is: " + files.length);
-            if (files.length < THRESHOLD) {
-                logger.info("into little..");
-                if (files.length > 0) {
-                    Arrays.stream(files)
-                          .forEach(dir -> {
-                              logger.info("dir name is: " + dir.getName());
-                              File[] zipFiles = dir.listFiles(file -> file.getName().matches(".+(.zip|ZIP)$"));
-
-                              Arrays.stream(zipFiles)
-                                    .forEach(zipFile -> {
-                                        logger.info("zip file name is: " + zipFile.getName());
-                                        if ("fulltext".equals(type)) {
-                                            unmarshalAllFulltextFromZip(zipFile.getAbsolutePath());
-                                            logger.info("unmarshalAllFulltextFromZip: " + zipFile.getAbsolutePath() + " finish");
-                                        } else if ("bibliographic".equals(type)) {
-                                            unmarshalAllBibliographicFromZip(zipFile.getAbsolutePath());
-                                            logger.info("unmarshalAllBibliographicFromZip: " + zipFile.getAbsolutePath() + " finish");
-                                        }
-
-                                    });
-                          });
-                }
-            } else {
-                int middleIndex = files.length / 2;
-                File[] files1 = Arrays.copyOfRange(files, 0, middleIndex);
-                File[] files2 = Arrays.copyOfRange(files, middleIndex, files.length);
-                UnmarshalFilesRecursiveTask<T> task1 = new UnmarshalFilesRecursiveTask<>(files1, type);
-                UnmarshalFilesRecursiveTask<T> task2 = new UnmarshalFilesRecursiveTask<>(files2, type);
-                invokeAll(task1, task2);
-            }
-        }
-
-        UnmarshalFilesRecursiveTask(File[] files, String type) {
-            this.files = files;
-            this.type = type;
-        }
     }
 
     public static StringBuilder parseNode(Node node) {
