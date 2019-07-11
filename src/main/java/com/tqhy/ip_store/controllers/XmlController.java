@@ -50,7 +50,7 @@ public class XmlController {
         String[] biblioBasePathArr =
                 {"BIBLIOGRAPHIC_INVENTION_GRANT", "BIBLIOGRAPHIC_INVENTION_PUBLICATION", "BIBLIOGRAPHIC_UTILITY_MODEL"};
 
-        Flowable.create(StoreRawDocsPublisher.with(baseDirPath,biblioBasePathArr), BackpressureStrategy.BUFFER)
+        Flowable.create(StoreRawDocsPublisher.with(baseDirPath, biblioBasePathArr), BackpressureStrategy.BUFFER)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(Schedulers.newThread())
                 .subscribe(new StoreRawDocsSubscriber() {
