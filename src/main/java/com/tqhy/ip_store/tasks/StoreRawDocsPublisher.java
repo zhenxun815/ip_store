@@ -26,24 +26,14 @@ public class StoreRawDocsPublisher implements FlowableOnSubscribe<RawDoc> {
     Logger logger = LoggerFactory.getLogger(StoreRawDocsPublisher.class);
 
     @NonNull
-    private File workBiblioDir;
+    private String baseDirPath;
+
+    @NonNull
+    private String[] biblioBasePathArr;
 
     @Override
     public void subscribe(FlowableEmitter<RawDoc> emitter) throws Exception {
-        File[] yearDirs = workBiblioDir.listFiles(File::isDirectory);
-        logger.info("biblio dirs in {} collection start...", workBiblioDir.getAbsolutePath());
-        List<File> xmlDirs = Arrays.stream(yearDirs)
-                                   .collect(ArrayList::new,
-                                            (list, yearDir) -> {
-                                                File[] xmlDirArr = XmlUtils.getXmlDirs(yearDir);
-                                                list.addAll(Arrays.asList(xmlDirArr));
-                                            },
-                                            ArrayList::addAll);
-        Iterator<File> xmlDirIterator = xmlDirs.iterator();
-
-        logger.info("biblio dirs in {} collection complete with count {}...",
-                    workBiblioDir.getAbsolutePath(),
-                    xmlDirs.size());
+        Iterator<File> xmlDirIterator = XmlUtils.getAllXmlDirUnderBaseDir(baseDirPath, biblioBasePathArr);
 
         while (xmlDirIterator.hasNext()) {
             if (emitter.requested() == 0) {

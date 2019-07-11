@@ -50,21 +50,17 @@ public class XmlController {
         String[] biblioBasePathArr =
                 {"BIBLIOGRAPHIC_INVENTION_GRANT", "BIBLIOGRAPHIC_INVENTION_PUBLICATION", "BIBLIOGRAPHIC_UTILITY_MODEL"};
 
-        for (String biblioBasePath : biblioBasePathArr) {
-            File workBiblioDir = new File(baseDirPath, biblioBasePath);
-            if (workBiblioDir.exists()) {
-                Flowable.create(StoreRawDocsPublisher.with(workBiblioDir), BackpressureStrategy.BUFFER)
-                        .subscribeOn(Schedulers.newThread())
-                        .observeOn(Schedulers.newThread())
-                        .subscribe(new StoreRawDocsSubscriber() {
-                            @Override
-                            public List<RawDoc> save(List<RawDoc> rawDocs) {
-                                return rawDocService.save(rawDocs).orElse(new ArrayList<>());
-                            }
-                        });
-            }
-        }
-        logger.info("all saving task complete...");
+        Flowable.create(StoreRawDocsPublisher.with(baseDirPath,biblioBasePathArr), BackpressureStrategy.BUFFER)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.newThread())
+                .subscribe(new StoreRawDocsSubscriber() {
+                    @Override
+                    public List<RawDoc> save(List<RawDoc> rawDocs) {
+                        return rawDocService.save(rawDocs).orElse(new ArrayList<>());
+                    }
+                });
+
+
     }
 
 
