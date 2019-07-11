@@ -7,12 +7,14 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,9 +31,14 @@ public class RawDocServiceImpl implements RawDocService {
     @Autowired
     RawDocRepository repository;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
+
     @Override
-    public Optional<List<RawDoc>> findAll() {
-        return null;
+    public Page<RawDoc> findAll(PageRequest pageRequest) {
+        Query query = new Query().with(pageRequest);
+        Page<RawDoc> page = findByQuery(pageRequest, query);
+        return page;
     }
 
     @Override
@@ -52,34 +59,42 @@ public class RawDocServiceImpl implements RawDocService {
 
     @Override
     public Optional<RawDoc> findByPubId(String pubId) {
-        return null;
+        RawDoc rawDoc = repository.findByPubId(pubId);
+        return Optional.ofNullable(rawDoc);
     }
 
     @Override
-    public Optional<List<RawDoc>> findBySection(String section) {
-        List<RawDoc> rawDocs = repository.findBySection(section);
-        if (rawDocs.size() > 0) {
-            return Optional.of(rawDocs);
-        }
-        return Optional.of(new ArrayList<>());
+    public Page<RawDoc> findBySection(String section,
+                                      PageRequest pageRequest) {
+        Query query = new Query().with(pageRequest)
+                                 .addCriteria(Criteria.where("section").is(section));
+        Page<RawDoc> page = findByQuery(pageRequest, query);
+        return page;
+    }
+
+
+    @Override
+    public Page<RawDoc> findBySectionAndMainClass(String section,
+                                                  String mainClass,
+                                                  PageRequest pageRequest) {
+        Query query = new Query().with(pageRequest)
+                                 .addCriteria(Criteria.where("section").is(section))
+                                 .addCriteria(Criteria.where("mainClass").is(mainClass));
+        Page<RawDoc> page = findByQuery(pageRequest, query);
+        return page;
     }
 
     @Override
-    public Optional<List<RawDoc>> findBySectionAndMainClass(String section, String mainClass) {
-        List<RawDoc> rawDocs = repository.findBySectionAndMainClass(section, mainClass);
-        if (rawDocs.size() > 0) {
-            return Optional.of(rawDocs);
-        }
-        return Optional.of(new ArrayList<>());
-    }
-
-    @Override
-    public Optional<List<RawDoc>> findBuySectionAndMainClassAndSubClass(String section, String mainClass, String subClass) {
-        List<RawDoc> rawDocs = repository.findBySectionAndMainClassAndSubClass(section, mainClass, subClass);
-        if (rawDocs.size() > 0) {
-            return Optional.of(rawDocs);
-        }
-        return Optional.of(new ArrayList<>());
+    public Page<RawDoc> findBuySectionAndMainClassAndSubClass(String section,
+                                                              String mainClass,
+                                                              String subClass,
+                                                              PageRequest pageRequest) {
+        Query query = new Query().with(pageRequest)
+                                 .addCriteria(Criteria.where("section").is(section))
+                                 .addCriteria(Criteria.where("mainClass").is(mainClass))
+                                 .addCriteria(Criteria.where("subClass").is(subClass));
+        Page<RawDoc> page = findByQuery(pageRequest, query);
+        return page;
     }
 
     @Override
@@ -96,16 +111,24 @@ public class RawDocServiceImpl implements RawDocService {
 
     @Override
     public void deleteByAppId(String appId) {
-
+        repository.deleteRawDocsByAppId(appId);
     }
 
     @Override
     public void deleteByPubId(String pubId) {
-
+        repository.deleteRawDocByPubId(pubId);
     }
 
     @Override
     public void deleteById(String id) {
+        repository.deleteBy_id(new ObjectId(id));
+    }
 
+
+    private Page<RawDoc> findByQuery(PageRequest pageRequest, Query query) {
+        List<RawDoc> rawDocs = mongoTemplate.find(query, RawDoc.class, "raw");
+        return PageableExecutionUtils.getPage(rawDocs,
+                                              pageRequest,
+                                              () -> mongoTemplate.count(query, RawDoc.class));
     }
 }

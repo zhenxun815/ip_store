@@ -1,6 +1,8 @@
 package com.tqhy.ip_store.services;
 
 import com.tqhy.ip_store.models.mongo.RawDoc;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.Optional;
  */
 public interface RawDocService {
 
-    Optional<List<RawDoc>> findAll();
+    Page<RawDoc> findAll(PageRequest pageRequest);
 
     Optional<RawDoc> findById(String id);
 
@@ -21,11 +23,12 @@ public interface RawDocService {
 
     Optional<RawDoc> findByPubId(String pubId);
 
-    Optional<List<RawDoc>> findBySection(String section);
+    Page<RawDoc> findBySection(String section, PageRequest pageRequest);
 
-    Optional<List<RawDoc>> findBySectionAndMainClass(String section, String mainClass);
+    Page<RawDoc> findBySectionAndMainClass(String section, String mainClass, PageRequest pageRequest);
 
-    Optional<List<RawDoc>> findBuySectionAndMainClassAndSubClass(String section, String mainClass, String subClass);
+    Page<RawDoc> findBuySectionAndMainClassAndSubClass(String section, String mainClass,
+                                                       String subClass, PageRequest pageRequest);
 
     Optional<RawDoc> save(RawDoc rawDoc);
 
