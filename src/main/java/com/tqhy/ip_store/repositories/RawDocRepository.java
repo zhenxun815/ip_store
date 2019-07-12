@@ -16,7 +16,7 @@ public interface RawDocRepository extends MongoRepository<RawDoc, String> {
 
     RawDoc findBy_id(ObjectId _id);
 
-    RawDoc findByPubId(String pubId);
+    List<RawDoc> findByPubId(String pubId);
 
     List<RawDoc> findByAppId(String appId);
 

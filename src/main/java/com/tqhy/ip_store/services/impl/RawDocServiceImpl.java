@@ -43,7 +43,6 @@ public class RawDocServiceImpl implements RawDocService {
 
     @Override
     public Optional<RawDoc> findById(String id) {
-
         RawDoc rawDoc = repository.findBy_id(new ObjectId(id));
         return Optional.ofNullable(rawDoc);
     }
@@ -59,8 +58,11 @@ public class RawDocServiceImpl implements RawDocService {
 
     @Override
     public Optional<RawDoc> findByPubId(String pubId) {
-        RawDoc rawDoc = repository.findByPubId(pubId);
-        return Optional.ofNullable(rawDoc);
+        List<RawDoc> rawDocs = repository.findByPubId(pubId);
+        if (rawDocs.size() > 0) {
+            return Optional.of(rawDocs.get(0));
+        }
+        return Optional.empty();
     }
 
     @Override
