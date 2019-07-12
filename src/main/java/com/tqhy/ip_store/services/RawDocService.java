@@ -27,8 +27,8 @@ public interface RawDocService {
 
     Page<RawDoc> findBySectionAndMainClass(String section, String mainClass, PageRequest pageRequest);
 
-    Page<RawDoc> findBuySectionAndMainClassAndSubClass(String section, String mainClass,
-                                                       String subClass, PageRequest pageRequest);
+    Page<RawDoc> findBySectionAndMainClassAndSubClass(String section, String mainClass,
+                                                      String subClass, PageRequest pageRequest);
 
     Optional<RawDoc> save(RawDoc rawDoc);
 

@@ -67,7 +67,7 @@ public class RawDocServiceImpl implements RawDocService {
     public Page<RawDoc> findBySection(String section,
                                       PageRequest pageRequest) {
         Query query = new Query().with(pageRequest)
-                                 .addCriteria(Criteria.where("section").is(section));
+                                 .addCriteria(Criteria.where("section").is(section.toUpperCase()));
         Page<RawDoc> page = findByQuery(pageRequest, query);
         return page;
     }
@@ -78,21 +78,21 @@ public class RawDocServiceImpl implements RawDocService {
                                                   String mainClass,
                                                   PageRequest pageRequest) {
         Query query = new Query().with(pageRequest)
-                                 .addCriteria(Criteria.where("section").is(section))
+                                 .addCriteria(Criteria.where("section").is(section.toUpperCase()))
                                  .addCriteria(Criteria.where("mainClass").is(mainClass));
         Page<RawDoc> page = findByQuery(pageRequest, query);
         return page;
     }
 
     @Override
-    public Page<RawDoc> findBuySectionAndMainClassAndSubClass(String section,
-                                                              String mainClass,
-                                                              String subClass,
-                                                              PageRequest pageRequest) {
+    public Page<RawDoc> findBySectionAndMainClassAndSubClass(String section,
+                                                             String mainClass,
+                                                             String subClass,
+                                                             PageRequest pageRequest) {
         Query query = new Query().with(pageRequest)
-                                 .addCriteria(Criteria.where("section").is(section))
+                                 .addCriteria(Criteria.where("section").is(section.toUpperCase()))
                                  .addCriteria(Criteria.where("mainClass").is(mainClass))
-                                 .addCriteria(Criteria.where("subClass").is(subClass));
+                                 .addCriteria(Criteria.where("subClass").is(subClass.toUpperCase()));
         Page<RawDoc> page = findByQuery(pageRequest, query);
         return page;
     }
