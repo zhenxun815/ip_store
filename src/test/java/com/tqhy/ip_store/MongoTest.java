@@ -11,9 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.validation.Valid;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
@@ -51,8 +52,9 @@ public class MongoTest {
         String mainClass = "02";
         String subClass = "A";
 
-        Optional<List<RawDoc>> bySectionOpt = rawDocService.findBuySectionAndMainClassAndSubClass(section, mainClass, subClass);
-        List<RawDoc> rawDocs = bySectionOpt.get();
+        Page<RawDoc> rawDocPage =
+                rawDocService.findBySectionAndMainClassAndSubClass(section, mainClass, subClass, PageRequest.of(0, 300));
+        List<RawDoc> rawDocs = rawDocPage.getContent();
         for (RawDoc rawDoc : rawDocs) {
             logger.info("get by section {} doc is {}", section, rawDoc);
         }
