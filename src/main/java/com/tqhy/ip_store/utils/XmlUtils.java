@@ -3,6 +3,8 @@ package com.tqhy.ip_store.utils;
 import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.models.xml.biblio.Biblio;
 import com.tqhy.ip_store.models.xml.fulltext.Fulltext;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -33,6 +35,8 @@ import java.util.*;
 public class XmlUtils {
 
     static Logger logger = LoggerFactory.getLogger(XmlUtils.class);
+
+    public static PolicyFactory policyFactory = new HtmlPolicyBuilder().toFactory();
 
     /**
      * 获所有xml文件所在文件夹集合的迭代器
@@ -262,8 +266,8 @@ public class XmlUtils {
         } else if (Node.TEXT_NODE == nodeType) {
             String textContent = node.getTextContent();
             //logger.info("item nodeType is " + nodeType + ", textContent: " + textContent);
-            //移除CDATA中标签内容
-            String withoutTags = textContent.replaceAll("(\\s)*([<][^>]*[>])(\\s)*", "");
+            //移除标签
+            String withoutTags = removeTags(textContent);
             //logger.info("withoutTags is: " + withoutTags);
             String replaceAmp = withoutTags.replaceAll("&amp;", "&");
             //logger.info("replaceAmp is: " + replaceAmp);
@@ -272,5 +276,15 @@ public class XmlUtils {
             return builder.append(escape.trim());
         }
         return builder;
+    }
+
+    /**
+     * 移除字符串中所有标签,包括CDATA等.
+     *
+     * @param str
+     * @return String, 若传入的是null, 则返回空字符串:"";
+     */
+    public static String removeTags(String str) {
+        return StringUtils.isEmpty(str) ? "" : policyFactory.sanitize(str);
     }
 }

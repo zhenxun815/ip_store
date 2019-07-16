@@ -34,11 +34,11 @@ public class RawDocUtils {
             return Optional.empty();
         }
         BiblioData biblioData = originalData.getBiblioData();
-        String title = biblioData.getTitle().getTitle();
+        String title = generateTitle(biblioData.getTitle());
         rawDoc.setTitle(title);
 
         Abs abs = originalData.getAbs();
-        String paragraph = abs.getParagraph().getParagraph();
+        String paragraph = generateAbs(abs);
         rawDoc.setAbs(paragraph);
 
         Map<String, String> pubInfoMap = generateDocIdInfo(biblioData.getPublicationInfo());
@@ -95,6 +95,18 @@ public class RawDocUtils {
                                                                                    .findFirst();
     }
 
+    //生成标题
+    public static String generateTitle(Title title) {
+        String titleStr = title.getTitle();
+        return XmlUtils.removeTags(titleStr);
+    }
+
+    //生成摘要
+    public static String generateAbs(Abs abs) {
+        Paragraph paragraph = abs.getParagraph();
+        String paragraphStr = paragraph.getParagraph();
+        return XmlUtils.removeTags(paragraphStr);
+    }
 
     //生成Claim
     public static String generateClaim(Claims claims) {
