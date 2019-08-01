@@ -10,6 +10,7 @@ import com.tqhy.ip_store.models.xml.fulltext.FulltextPatentDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Node;
 
 import java.util.*;
 
@@ -103,9 +104,8 @@ public class RawDocUtils {
 
     //生成摘要
     public static String generateAbs(Abs abs) {
-        Paragraph paragraph = abs.getParagraph();
-        String paragraphStr = paragraph.getParagraph();
-        return XmlUtils.removeTags(paragraphStr);
+        Node paragraph = abs.getParagraph();
+        return XmlUtils.parseNode(paragraph).toString();
     }
 
     //生成Claim
