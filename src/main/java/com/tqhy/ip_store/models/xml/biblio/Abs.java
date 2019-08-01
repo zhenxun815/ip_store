@@ -1,14 +1,12 @@
 package com.tqhy.ip_store.models.xml.biblio;
 
-import com.tqhy.ip_store.models.xml.Paragraph;
+import com.tqhy.ip_store.models.xml.AnyElement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.w3c.dom.Node;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.io.Serializable;
 
 /**
@@ -30,10 +28,9 @@ public class Abs implements Serializable {
     @XmlAttribute(name = "lang")
     private String lang;*/
 
-    @XmlElement(name = "Paragraph")
-    private Paragraph paragraph;
+    @XmlAnyElement
+    private Node paragraph;
 
-  /*  @XmlElementWrapper(name = "AbstractFigure")
-    @XmlElement(name = "Figure")
-    private List<Figure> figures;*/
+    @XmlElement(name = "AbstractFigure")
+    private AnyElement figures;
 }
