@@ -26,14 +26,7 @@ public class Claims implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @XmlAttribute
-    private String lang;
-
-    @XmlAttribute
-    private String claimType;
-
-    @XmlAttribute
     private String format;
-
 
     @XmlAnyElement
     private List<Node> claimTexts;
