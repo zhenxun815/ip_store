@@ -25,15 +25,13 @@ public class XmlTest {
 
     @Test
     public void testParseXml() {
-        String xmlDir = "F:\\ip_data\\xml\\BIBLIOGRAPHIC_INVENTION_PUBLICATION\\CN2015105122581A";
-        String xmlName = "CN2015105122581A.XML";
-        /*
+        String xmlDir = "F:\\ip_data\\xml\\BIBLIOGRAPHIC_INVENTION_PUBLICATION\\CN2016102721435B";
+        String xmlName = "CN2016102721435B.XML";
         File biblioXmlFile = new File(xmlDir, xmlName);
         Biblio biblio = XmlUtils.unmarshal(biblioXmlFile, Biblio.class);
-        logger.info("biblio is {}", biblio);
-        */
-        RawDoc rawDoc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(null);
-        logger.info("raw doc is: {}", JSONObject.toJSONString(rawDoc));
+        logger.info("biblio is {}", XmlUtils.parseNode(biblio.getPatentDocument().getAbs().getParagraph()));
+        //RawDoc rawDoc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(null);
+        //logger.info("raw doc is: {}", JSONObject.toJSONString(rawDoc));
     }
 
     @Test
