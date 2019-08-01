@@ -5,6 +5,7 @@ import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.repositories.RawDocRepository;
 import com.tqhy.ip_store.services.RawDocService;
 import com.tqhy.ip_store.utils.XmlUtils;
+import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -53,7 +54,8 @@ public class MongoTest {
         String subClass = "A";
 
         Page<RawDoc> rawDocPage =
-                rawDocService.findBySectionAndMainClassAndSubClass(section, mainClass, subClass, PageRequest.of(0, 300));
+                rawDocService.findBySectionAndMainClassAndSubClass(section, mainClass, subClass,
+                                                                   PageRequest.of(0, 300));
         List<RawDoc> rawDocs = rawDocPage.getContent();
         for (RawDoc rawDoc : rawDocs) {
             logger.info("get by section {} doc is {}", section, rawDoc);
@@ -63,11 +65,19 @@ public class MongoTest {
     @Test
     public void testSave() {
         String xmlDir = "F:\\ip_data\\xml\\BIBLIOGRAPHIC_INVENTION_PUBLICATION\\CN2016103202590B";
-        //String xmlName = "CN2015105122581A.XML";
-        //File biblioXmlFile = new File(xmlDir, xmlName);
         RawDoc doc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(new RawDoc());
         logger.info("doc to save is {}", JSONObject.toJSONString(doc));
         rawDocService.save(doc)
                      .ifPresent(rawDoc -> logger.info("save doc is {}", JSONObject.toJSONString(rawDoc)));
+    }
+
+    @Test
+    public void testUpdate() {
+        String xmlDir = "F:\\ip_data\\xml\\BIBLIOGRAPHIC_INVENTION_PUBLICATION\\CN2016102721435B";
+        RawDoc doc = XmlUtils.getRawDocFromXml(new File(xmlDir)).orElse(new RawDoc());
+        boolean update = rawDocService.update(doc);
+        logger.info("update {}: {}", doc.getPubId(), update);
+        doc.set_id(new ObjectId());
+        logger.info("doc to save is {}", JSONObject.toJSONString(doc));
     }
 }
