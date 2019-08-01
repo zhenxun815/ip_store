@@ -9,13 +9,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Yiheng
  * @create 7/11/2019
  * @since 1.0.0
  */
-public abstract class StoreRawDocsSubscriber implements FlowableSubscriber<RawDoc> {
+public abstract class StoreRawDocsSubscriber implements FlowableSubscriber<RawDoc>,
+                                                        Function<List<RawDoc>, List<RawDoc>> {
 
     Logger logger = LoggerFactory.getLogger(StoreRawDocsSubscriber.class);
 
@@ -34,7 +37,7 @@ public abstract class StoreRawDocsSubscriber implements FlowableSubscriber<RawDo
         rawDocs.add(rawDoc);
         logger.info("on next size {}", rawDocs.size());
         if (rawDocs.size() == 5000) {
-            List<RawDoc> saveDocs = save(rawDocs);
+            List<RawDoc> saveDocs = apply(rawDocs);
             logger.info("on next save ... {}", saveDocs.size());
             rawDocs.clear();
         }
@@ -50,11 +53,9 @@ public abstract class StoreRawDocsSubscriber implements FlowableSubscriber<RawDo
     public void onComplete() {
         logger.info("on complete...");
         if (rawDocs.size() > 0) {
-            List<RawDoc> saveDocs = save(rawDocs);
+            List<RawDoc> saveDocs = apply(rawDocs);
             logger.info("on complete save ... {}", saveDocs.size());
             rawDocs.clear();
         }
     }
-
-    public abstract List<RawDoc> save(List<RawDoc> rawDocs);
 }
