@@ -15,6 +15,18 @@ import java.util.Optional;
  */
 public interface RawDocService {
 
+    Optional<RawDoc> save(RawDoc rawDoc);
+
+    Optional<List<RawDoc>> save(List<RawDoc> rawDocs);
+
+    void deleteByAppId(String appId);
+
+    void deleteByPubId(String pubId);
+
+    void deleteById(String id);
+
+    boolean update(RawDoc rawDoc);
+
     Page<RawDoc> findAll(PageRequest pageRequest);
 
     Optional<RawDoc> findById(String id);
@@ -30,13 +42,4 @@ public interface RawDocService {
     Page<RawDoc> findBySectionAndMainClassAndSubClass(String section, String mainClass,
                                                       String subClass, PageRequest pageRequest);
 
-    Optional<RawDoc> save(RawDoc rawDoc);
-
-    Optional<List<RawDoc>> save(List<RawDoc> rawDocs);
-
-    void deleteByAppId(String appId);
-
-    void deleteByPubId(String pubId);
-
-    void deleteById(String id);
 }

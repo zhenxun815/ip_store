@@ -3,6 +3,7 @@ package com.tqhy.ip_store.services.impl;
 import com.tqhy.ip_store.models.mongo.RawDoc;
 import com.tqhy.ip_store.repositories.RawDocRepository;
 import com.tqhy.ip_store.services.RawDocService;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +40,7 @@ public class RawDocServiceImpl implements RawDocService {
     @Override
     public Page<RawDoc> findAll(PageRequest pageRequest) {
         Query query = new Query().with(pageRequest);
-        Page<RawDoc> page = findByQuery(pageRequest, query);
-        return page;
+        return findByQuery(pageRequest, query);
     }
 
     @Override
@@ -70,8 +72,7 @@ public class RawDocServiceImpl implements RawDocService {
                                       PageRequest pageRequest) {
         Query query = new Query().with(pageRequest)
                                  .addCriteria(Criteria.where("section").is(section.toUpperCase()));
-        Page<RawDoc> page = findByQuery(pageRequest, query);
-        return page;
+        return findByQuery(pageRequest, query);
     }
 
 
@@ -82,8 +83,7 @@ public class RawDocServiceImpl implements RawDocService {
         Query query = new Query().with(pageRequest)
                                  .addCriteria(Criteria.where("section").is(section.toUpperCase()))
                                  .addCriteria(Criteria.where("mainClass").is(mainClass));
-        Page<RawDoc> page = findByQuery(pageRequest, query);
-        return page;
+        return findByQuery(pageRequest, query);
     }
 
     @Override
@@ -95,8 +95,7 @@ public class RawDocServiceImpl implements RawDocService {
                                  .addCriteria(Criteria.where("section").is(section.toUpperCase()))
                                  .addCriteria(Criteria.where("mainClass").is(mainClass))
                                  .addCriteria(Criteria.where("subClass").is(subClass.toUpperCase()));
-        Page<RawDoc> page = findByQuery(pageRequest, query);
-        return page;
+        return findByQuery(pageRequest, query);
     }
 
     @Override
@@ -124,6 +123,24 @@ public class RawDocServiceImpl implements RawDocService {
     @Override
     public void deleteById(String id) {
         repository.deleteBy_id(new ObjectId(id));
+    }
+
+    @Override
+    public boolean update(RawDoc rawDoc) {
+        if (StringUtils.isEmpty(rawDoc.getPubId())){
+            logger.info("raw doc to update is empty");
+            return false;
+        }
+        Query query = new Query().addCriteria(Criteria.where("pubId").is(rawDoc.getPubId()));
+        Update update = new Update().set("title", rawDoc.getTitle())
+                                    .set("abs", rawDoc.getAbs())
+                                    .set("claim", rawDoc.getClaim())
+                                    .setOnInsert("appId", rawDoc.getAppId())
+                                    .setOnInsert("section", rawDoc.getSection())
+                                    .setOnInsert("mainClass", rawDoc.getMainClass())
+                                    .setOnInsert("subClass", rawDoc.getSubClass());
+
+        return  mongoTemplate.upsert(query, update, RawDoc.class, "raw").wasAcknowledged();
     }
 
 
