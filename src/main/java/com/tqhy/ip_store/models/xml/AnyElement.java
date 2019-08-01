@@ -3,11 +3,9 @@ package com.tqhy.ip_store.models.xml;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.w3c.dom.Node;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlMixed;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.*;
 import java.io.Serializable;
 import java.util.List;
 
@@ -20,7 +18,7 @@ import java.util.List;
 @Setter
 @ToString
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Paragraph implements Serializable {
+public class AnyElement implements Serializable {
     private static final long serialVersionUID = 1L;
 /*
     @XmlAttribute(name = "appId")
@@ -29,7 +27,7 @@ public class Paragraph implements Serializable {
     @XmlAttribute(name = "number")
     private String number;*/
 
-    @XmlValue
-    private String paragraph;
+    @XmlAnyElement
+    private List<Node> paragraph;
 
 }
