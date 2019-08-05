@@ -92,14 +92,14 @@ public class RawDocUtils {
         List<ClassificationIPCR> classificationIPCRs = biblioData.getClassificationIPCRs();
 
         return null == classificationIPCRs ? Optional.empty() : classificationIPCRs.stream()
-                                                                                   .filter(ipcr -> ipcr.getSequence().equals("1"))
+                                                                                   .filter(ipcr -> ipcr.getSequence()
+                                                                                                       .equals("1"))
                                                                                    .findFirst();
     }
 
     //生成标题
-    public static String generateTitle(Title title) {
-        String titleStr = title.getTitle();
-        return XmlUtils.removeTags(titleStr);
+    public static String generateTitle(String title) {
+        return XmlUtils.removeTags(title);
     }
 
     //生成摘要
@@ -134,7 +134,8 @@ public class RawDocUtils {
         if (null != priorityClaimDetails && priorityClaimDetails.size() > 0) {
             priorityClaimDetails.stream()
                                 .filter(docEntity -> {
-                                    boolean isOriginal = Constants.XML_DATA_FORMAT_ORIGINAL.equals(docEntity.getDataFormat());
+                                    boolean isOriginal = Constants.XML_DATA_FORMAT_ORIGINAL.equals(
+                                            docEntity.getDataFormat());
                                     if (isOriginal) {
                                         boolean isFirst = docEntity.isFirstPriority();
                                         return isFirst;

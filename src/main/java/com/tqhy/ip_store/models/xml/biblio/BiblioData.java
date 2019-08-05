@@ -1,11 +1,13 @@
 package com.tqhy.ip_store.models.xml.biblio;
 
 import com.tqhy.ip_store.models.xml.DocumentIdInfo;
+import com.tqhy.ip_store.models.xml.TitleHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.util.List;
 
@@ -41,6 +43,6 @@ public class BiblioData implements Serializable {
     @XmlElement(name = "ClassificationIPC")
     private ClassificationIPC classificationIPC;
 
-    @XmlElement(name = "Title")
-    private Title title;
+    @XmlAnyElement(value = TitleHandler.class)
+    private String title;
 }
