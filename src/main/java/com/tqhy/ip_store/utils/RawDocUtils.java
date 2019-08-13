@@ -41,7 +41,9 @@ public class RawDocUtils {
         Abs abs = originalData.getAbs();
         String paragraph = generateAbs(abs);
         rawDoc.setAbs(paragraph);
-
+        if (StringUtils.isEmpty(title) && StringUtils.isEmpty(abs)) {
+            return Optional.empty();
+        }
         Map<String, String> pubInfoMap = generateDocIdInfo(biblioData.getPublicationInfo());
         String pubId = pubInfoMap.get("id");
         String date = pubInfoMap.get("date");
@@ -99,11 +101,14 @@ public class RawDocUtils {
 
     //生成标题
     public static String generateTitle(String title) {
-        return XmlUtils.removeTags(title);
+        return StringUtils.isEmpty(title) ? "" : XmlUtils.removeTags(title);
     }
 
     //生成摘要
     public static String generateAbs(Abs abs) {
+        if (null == abs) {
+            return "";
+        }
         Node paragraph = abs.getParagraph();
         return XmlUtils.parseNode(paragraph).toString();
     }
