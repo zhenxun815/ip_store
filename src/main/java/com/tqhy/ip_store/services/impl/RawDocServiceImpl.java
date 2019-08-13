@@ -99,6 +99,15 @@ public class RawDocServiceImpl implements RawDocService {
     }
 
     @Override
+    public long countBySectionAndMainClassAndSubClass(String section, String mainClass, String subClass) {
+        Query query = new Query().addCriteria(Criteria.where("section").is(section.toUpperCase()))
+                                 .addCriteria(Criteria.where("mainClass").is(mainClass))
+                                 .addCriteria(Criteria.where("subClass").is(subClass.toUpperCase()));
+
+        return mongoTemplate.count(query, RawDoc.class, "raw");
+    }
+
+    @Override
     public Optional<RawDoc> save(RawDoc rawDoc) {
         return Optional.ofNullable(repository.save(rawDoc));
     }

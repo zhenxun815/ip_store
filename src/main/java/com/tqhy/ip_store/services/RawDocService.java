@@ -42,4 +42,5 @@ public interface RawDocService {
     Page<RawDoc> findBySectionAndMainClassAndSubClass(String section, String mainClass,
                                                       String subClass, PageRequest pageRequest);
 
+    long countBySectionAndMainClassAndSubClass(String section, String mainClass, String subClass);
 }
