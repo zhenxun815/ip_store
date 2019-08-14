@@ -89,7 +89,7 @@ public class XmlUtils {
         String yearDirName = yearDir.getName();
         String parentDirPath = "CREATE/" + yearDirName + "/";
         File parentDir = new File(yearDir, parentDirPath);
-        return parentDir.listFiles(File::isDirectory);
+        return parentDir.listFiles(file -> file.isDirectory() && file.getName().startsWith("CN"));
     }
 
 
