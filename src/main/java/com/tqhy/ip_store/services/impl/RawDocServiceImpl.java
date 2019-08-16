@@ -136,7 +136,7 @@ public class RawDocServiceImpl implements RawDocService {
 
     @Override
     public boolean update(RawDoc rawDoc) {
-        if (StringUtils.isEmpty(rawDoc.getPubId())){
+        if (StringUtils.isEmpty(rawDoc.getPubId())) {
             logger.info("raw doc to update is empty");
             return false;
         }
@@ -147,9 +147,11 @@ public class RawDocServiceImpl implements RawDocService {
                                     .setOnInsert("appId", rawDoc.getAppId())
                                     .setOnInsert("section", rawDoc.getSection())
                                     .setOnInsert("mainClass", rawDoc.getMainClass())
-                                    .setOnInsert("subClass", rawDoc.getSubClass());
+                                    .setOnInsert("subClass", rawDoc.getSubClass())
+                                    .setOnInsert("publicationDate", rawDoc.getPublicationDate())
+                                    .setOnInsert("applicationDate", rawDoc.getApplicationDate());
 
-        return  mongoTemplate.upsert(query, update, RawDoc.class, "raw").wasAcknowledged();
+        return mongoTemplate.upsert(query, update, RawDoc.class, "raw").wasAcknowledged();
     }
 
 
