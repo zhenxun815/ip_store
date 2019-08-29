@@ -264,7 +264,7 @@ public class FileUtils {
     public static void readLine(File file, Consumer<String> consumer) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             reader.lines()
-                  .forEach(line -> consumer.accept(line));
+                  .forEach(line -> consumer.accept(line.trim()));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
